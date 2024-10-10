@@ -1,0 +1,231 @@
+---
+title: "Etapa3"
+author: "Rolando Ruiz Martínez"
+date: "2024-08-30"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(Matrix)
+library(lme4)
+library(emmeans)
+library(nortest)
+library(nlme)
+library(MASS)
+```
+
+```{r}
+emm_options(pbkrtest.limit = 5952, lmerTest.limit = 5952)
+```
+
+```{r}
+# Define the array of contaminants
+contaminants <- c("_CO","_NO","_NO2","_NOX","_O3","_PM10","_PM2.5","_SO2") # Replace with your actual contaminant names
+contaminants_no_under <- c("CO","NO","NO2","NOX","O3","PM10","PM2.5","SO2")
+results_matrix <- matrix(0L, nrow = 11, ncol = 8)
+
+
+# Iterate over each number and contaminant
+for (number in 1:12) {
+  print("************************************************")
+  
+  if (number == 9) {
+    next
+  }
+  cat("Mes: ", number, "\n")
+  
+  for (contaminant_index in seq_along(contaminants)) {
+    contaminant <- contaminants[contaminant_index]
+    print("=============")
+    dependent_var <- paste0("X", contaminant)
+    # Construct the file name
+    file_name <- paste0(number,contaminant, ".csv")
+    
+    # Read the CSV file
+    data <- read.csv(file_name)
+    
+    min_value <- min(data[[dependent_var]], na.rm = TRUE)
+    if (min_value <= 0) {
+        data[[dependent_var]] <- data[[dependent_var]] + abs(min_value) + 1
+    }
+
+    data$FECHA <- as.POSIXct(data$FECHA)
+
+    boxcox_result <- boxcox(lm(data[[dependent_var]]~ 1, data = data), plotit = FALSE)
+    lambda_optimal <- boxcox_result$x[which.max(boxcox_result$y)]
+    if(lambda_optimal == 0){
+      data$transformed_var <- log(data[[dependent_var]])
+    }
+    else{
+      # Perform the linear model (adjust the formula as needed)
+      data$transformed_var <- data[[dependent_var]]
+    }
+
+    
+    model <- lmer(data[["transformed_var"]] ~ PORCENTAJE + (1|FECHA), data=data) # Replace y and x with your actual variable Replace y and x with your actual variable names
+    
+    emm <- emmeans(model, pairwise ~ PORCENTAJE, )
+
+    # Print the pairwise comparisons
+    #print(emm$contrasts)
+    
+    # Perform pairwise comparison between "High" and "Low"
+    contrast_result <- contrast(emm, method = "pairwise", adjust = "none")
+    contrast_summary <- summary(contrast_result)
+    
+    # Extract and print the specific comparison for "High" vs "Low"
+    high_vs_low <- contrast_summary[contrast_summary$contrast == "ALTO - BAJO", ]
+    print(high_vs_low)
+    
+    # Check the estimate to determine if "High" is lower or greater than "Low"
+    estimate <- high_vs_low$estimate
+    p_value <- high_vs_low$p.value
+    
+    adjusted_number = number
+    if(number > 9){
+      adjusted_number <- number - 1
+    }
+    
+    # Print results with interpretation
+    if (p_value < 0.0005) {
+      if (estimate < 0) {
+        print("Concentration of 'High' green level is lower than 'Low' green level.")
+        results_matrix[adjusted_number, contaminant_index] <- 1
+      } else {
+        print("Concentration of 'High' green level is higher than 'Low' green level.")
+        results_matrix[adjusted_number, contaminant_index] <- -1
+      }
+    } else {
+      print("There is no difference between the concentrations.")
+    }
+    
+    residuals <- resid(model)
+    fitted_values <- fitted(model)
+    results <- list()
+    
+      plot(fitted_values, residuals,
+        xlab = "Valores de predicción",
+        ylab = "Residuales",
+        main = paste0("Mes: ", number, " Contaminante: ", contaminants_no_under[contaminant_index]))
+        abline(h = 0, col = "red")
+  
+    ad_result <- ad.test(residuals)
+    results$normality <- ifelse(ad_result$p.value > 0.01, "Passed", "Failed")
+    
+    t_test_result <- t.test(residuals, mu = 0)
+    results$zero_mean <- ifelse(t_test_result$p.value > 0.05, "Passed", "Failed")
+
+    
+    print("Test Results:")
+    print(paste("Normality Test:", results$normality))
+    print(paste("Zero Mean Test:", results$zero_mean))
+    
+    # Print or save the model summary
+    # print(summary(model))
+    
+    # Optional: Store the model results for further analysis
+    # model_results[[paste0(number, "_", contaminant)]] <- summary(model)
+  }
+}
+```
+
+
+
+```{r}
+# Install and load the pheatmap package if needed
+library(pheatmap)
+
+# Define a custom color palette for -1, 0, 1
+custom_colors <- c("-1" = "darkorange", "0" = "grey", "1" = "limegreen")
+
+# Plot the heatmap with the custom color palette
+pheatmap(results_matrix, 
+         color = unname(custom_colors[as.character(sort(unique(c(results_matrix))))]),
+         cluster_rows = FALSE, 
+         cluster_cols = FALSE,
+         legend_breaks = c(-1, 0, 1), 
+         legend_labels = c("-1", "0", "1"),
+         main = "Diferencias de concentración en zonas de alta y baja vegetación", 
+         labels_col = c("CO","NO","NO2","NOX","O3","PM10","PM2.5","SO2"),
+         labels_row = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Octubre", "Noviembre", "Diciembre" ))
+
+```
+
+
+```{r}
+# Load the ComplexHeatmap package
+library(ComplexHeatmap)
+
+# Define the custom color palette
+custom_colors <- c("-1" = "darkorange", "0" = "grey", "1" = "limegreen")
+
+# Create the heatmap object with customized legend parameters
+heatmap_obj <- Heatmap(results_matrix, 
+                       col = custom_colors,
+                       name = "Concentración",  # Name for the legend
+                       column_labels = c("CO","NO","NO2","NOX","O3","PM10","PM2.5","SO2"),
+                       row_labels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Octubre", "Noviembre", "Diciembre"),
+                       cluster_rows = FALSE,
+                       cluster_columns = FALSE,
+                       heatmap_legend_param = list(
+                         title = "Concentración en zonas más verdes ",
+                         at = c(-1, 0, 1),
+                         labels = c("Menor", "Sin diferencia", "Mayor"),
+                         legend_direction = "horizontal" # Orientation to horizontal
+                       ), 
+                       border = TRUE, border_gp = gpar(lwd = 1),
+                       heatmap_height = unit(5, "npc"), heatmap_width = unit(5, "npc"), width = 5, height = 10)
+
+# Draw the heatmap with the legend at the bottom
+draw(heatmap_obj, heatmap_legend_side = "left", annotation_legend_side = "left")
+
+# Add main title using grid package in the correct viewport
+pushViewport(viewport())
+grid.text("Diferencias de concentración en zonas de alta y baja vegetación", 
+          x = unit(0.5, "npc"), 
+          y = unit(1.1, "npc"), 
+          gp = gpar(fontsize = 16, fontface = "bold"))
+popViewport()
+
+```
+
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(reshape2)
+
+# Define row and column names
+rownames(results_matrix) <- c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Octubre", "Noviembre", "Diciembre")
+colnames(results_matrix) <- c("CO","NO","NO2","NOX","O3","PM10","PM2.5","SO2")
+
+# Melt the matrix to long format for ggplot
+melted_matrix <- melt(results_matrix)
+
+# Define the custom color palette
+custom_colors <- c("-1" = "darkorange", "0" = "grey", "1" = "limegreen")
+
+# Create the heatmap with ggplot2
+ggplot(melted_matrix, aes(x = Var2, y = Var1, fill = factor(value))) +
+  geom_tile(color = "black", linewidth = 0.1) +  # Add borders between cells
+  scale_fill_manual(values = custom_colors, name = "Concentración", 
+                    breaks = c("-1", "0", "1"),
+                    labels = c("Mayor", "Sin diferencia", "Menor")) +
+  labs(title = "Concentración en zonas de mayor porcentaje de vegetación", 
+       x = "Contaminantes",
+       y = "Meses") +
+  scale_y_discrete(limits = rev(levels(melted_matrix$Var1))) +  # Reverse y-axis
+  coord_fixed(ratio = 0.9) +  # Set aspect ratio to 1 (square)
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom",  # Place legend at the bottom
+    plot.title = element_text(hjust = 0.5),  # Center the title
+    aspect.ratio = 0.9
+  )
+
+```
+
