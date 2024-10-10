@@ -3,11 +3,13 @@
 ## Overview
 This project examines the connection between green coverage and air quality in Monterrey during 2022, a city known for its high levels of industrialization and pollution. By utilizing data from the Environmental Monitoring System (SIMA) and satellite imagery from Google Earth Engine, the study evaluates the effect of urban vegetation on the concentration of key atmospheric pollutants, such as particulate matter (PM10, PM2.5), sulfur dioxide (SO₂), nitrogen dioxide (NO₂), nitrogen oxides (NOx), and ozone (O₃).
 
+
 ## Objectives
 The main goal is to determine whether areas with higher vegetation levels have lower pollutant concentrations compared to areas with less green coverage. This analysis provides insights for environmental and urban planning policies that encourage the creation and conservation of green spaces in urban environments.
 
 ## Methodology
 - **Data Collection:** Air quality data from SIMA monitoring stations was collected, along with satellite imagery from Google Earth Engine to measure the green coverage within a 2.5 km radius around each station.
+  ![image](https://github.com/user-attachments/assets/2eeae4db-639f-49d8-b633-1a583ed78687)
 - **Statistical Models:** Mixed-effects models were used to analyze the relationship between green coverage and pollutant concentrations, with vegetation percentage treated as a fixed effect and time as a random effect.
 - **Transformations:** Box-Cox transformations were applied to ensure normality of the data before performing statistical analysis.
 
