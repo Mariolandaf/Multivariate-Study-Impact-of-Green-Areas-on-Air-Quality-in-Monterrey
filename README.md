@@ -24,7 +24,7 @@ The project provides significant evidence that green areas can play a key role i
 ## Technologies Used
 - Python (Pandas, Rasterio)
 - Google Earth Engine
-- Mixed-Effects Models
-- Box-Cox Transformations
+- Mixed-Effects Models with R
+- Box-Cox Transformations with R
 
 This project serves as a foundation for future research on the relationship between vegetation and air pollution in urban settings.
