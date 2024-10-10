@@ -9,7 +9,7 @@ The main goal is to determine whether areas with higher vegetation levels have l
 
 ## Methodology
 - **Data Collection:** Air quality data from SIMA monitoring stations was collected, along with satellite imagery from Google Earth Engine to measure the green coverage within a 2.5 km radius around each station.
-![Alt foto](SuresteGuadalupe_29.57.png)
+!(MapExample.png)
 - **Statistical Models:** Mixed-effects models were used to analyze the relationship between green coverage and pollutant concentrations, with vegetation percentage treated as a fixed effect and time as a random effect.
 - **Transformations:** Box-Cox transformations were applied to ensure normality of the data before performing statistical analysis.
 
