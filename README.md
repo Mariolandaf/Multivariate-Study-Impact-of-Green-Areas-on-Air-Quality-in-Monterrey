@@ -8,7 +8,7 @@ This project examines the connection between green coverage and air quality in M
 The main goal is to determine whether areas with higher vegetation levels have lower pollutant concentrations compared to areas with less green coverage. This analysis provides insights for environmental and urban planning policies that encourage the creation and conservation of green spaces in urban environments.
 
 ## Methodology
-- **Data Collection:** Air quality data from SIMA monitoring stations was collected, along with satellite imagery from Google Earth Engine to measure the green coverage within a 2.5 km radius around each station.
+- **Data Collection:** Air quality data from SIMA monitoring stations was collected, along with satellite imagery from Google Earth Engine to measure the green coverage within a 2.5 km radius around each station, using the `rasterio` library in Python to calculate the percentage of green area.
 ![Alt Map](MapExample.png)
 - **Statistical Models:** Mixed-effects models were used to analyze the relationship between green coverage and pollutant concentrations, with vegetation percentage treated as a fixed effect and time as a random effect.
 - **Transformations:** Box-Cox transformations were applied to ensure normality of the data before performing statistical analysis.
