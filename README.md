@@ -18,6 +18,8 @@ The main goal is to determine whether areas with higher vegetation levels have l
 ## Results
 The study suggests that vegetation positively affects the reduction of pollutants such as NO₂, NOx, and PM10. However, some pollutants, like ozone (O₃), exhibited an opposite trend, with higher concentrations in areas with more vegetation. These findings indicate that while green spaces help improve air quality, other environmental factors also play a role in influencing pollution levels.
 
+![Alt Results](Results.jpg)
+
 ## Conclusions
 The project provides significant evidence that green areas can play a key role in improving air quality in Monterrey. The results highlight the importance of implementing public policies that promote urban greening as a strategy to mitigate air pollution.
 
