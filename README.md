@@ -12,6 +12,8 @@ The main goal is to determine whether areas with higher vegetation levels have l
   
 ![Alt Map](MapExample.png)
 
+*Figure 1. Two views around an air quality monitoring station, highlighting vegetation density. The left side shows an NDVI map with red (low) to green (high) vegetation, and the right side uses a gradient from white to dark green to indicate vegetation presence.*
+
 - **Statistical Models:** Mixed-effects models were used to analyze the relationship between green coverage and pollutant concentrations, with vegetation percentage treated as a fixed effect and time as a random effect.
 - **Transformations:** Box-Cox transformations were applied to ensure normality of the data before performing statistical analysis.
 
